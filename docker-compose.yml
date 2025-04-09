@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Databases
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_MULTIPLE_DATABASES: user_service,product_service
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # User Service
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=user_service
+      - DB_SYNC=true
+      - PORT=3001
+      - MICROSERVICE_PORT=4001
+    ports:
+      - "3001:3001"
+      - "4001:4001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Product Service
+  product-service:
+    build:
+      context: .
+      dockerfile: product-service/Dockerfile
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=product_service
+      - DB_SYNC=true
+      - PORT=3002
+      - MICROSERVICE_PORT=4002
+    ports:
+      - "3002:3002"
+      - "4002:4002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    environment:
+      - PORT=3000
+      - USER_SERVICE_HOST=user-service
+      - USER_SERVICE_PORT=4001
+      - PRODUCT_SERVICE_HOST=product-service
+      - PRODUCT_SERVICE_PORT=4002
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-service
+      - product-service
+
+volumes:
+  postgres_data:
