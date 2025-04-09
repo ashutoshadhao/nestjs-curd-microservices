@@ -1,6 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, EmptyError } from 'rxjs';
 import { CreateUserDto, UpdateUserDto } from '../../../libs/src/dto/users';
 import { USER_MESSAGE_PATTERNS } from '../../../libs/src/constants';
 
@@ -11,35 +11,72 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    return firstValueFrom(
-      this.userServiceClient.send(USER_MESSAGE_PATTERNS.CREATE_USER, createUserDto)
-    );
+    try {
+      return await firstValueFrom(
+        this.userServiceClient.send(USER_MESSAGE_PATTERNS.CREATE_USER, createUserDto)
+      );
+    } catch (error) {
+      if (error instanceof EmptyError) {
+        throw new NotFoundException('User service did not return a response');
+      }
+      throw error;
+    }
   }
 
   async findAll() {
-    return firstValueFrom(
-      this.userServiceClient.send(USER_MESSAGE_PATTERNS.FIND_ALL_USERS, {})
-    );
+    try {
+      return await firstValueFrom(
+        this.userServiceClient.send(USER_MESSAGE_PATTERNS.FIND_ALL_USERS, {})
+      );
+    } catch (error) {
+      if (error instanceof EmptyError) {
+        return []; // Return empty array instead of throwing when no users found
+      }
+      throw error;
+    }
   }
 
   async findOne(id: number) {
-    return firstValueFrom(
-      this.userServiceClient.send(USER_MESSAGE_PATTERNS.FIND_ONE_USER, id)
-    );
+    try {
+      return await firstValueFrom(
+        this.userServiceClient.send(USER_MESSAGE_PATTERNS.FIND_ONE_USER, id)
+      );
+    } catch (error) {
+      if (error instanceof EmptyError) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      throw error;
+    }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    return firstValueFrom(
-      this.userServiceClient.send(
-        USER_MESSAGE_PATTERNS.UPDATE_USER, 
-        { id, updateUserDto }
-      )
-    );
+    try {
+      return await firstValueFrom(
+        this.userServiceClient.send(
+          USER_MESSAGE_PATTERNS.UPDATE_USER, 
+          { id, updateUserDto }
+        )
+      );
+    } catch (error) {
+      if (error instanceof EmptyError) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      throw error;
+    }
   }
 
-  async remove(id: number) {
-    return firstValueFrom(
-      this.userServiceClient.send(USER_MESSAGE_PATTERNS.REMOVE_USER, id)
-    );
+  async remove(id: number): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.userServiceClient.send(USER_MESSAGE_PATTERNS.REMOVE_USER, id)
+      );
+      return;
+    } catch (error) {
+      if (error instanceof EmptyError) {
+    
+        return;
+      }
+      throw error;
+    }
   }
 }

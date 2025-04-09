@@ -3,9 +3,8 @@ import { INestApplication } from '@nestjs/common';
 import { UsersController } from '../src/users/users.controller';
 import { UsersService } from '../src/users/users.service';
 import { User } from '../src/users/entities/user.entity';
-import { CreateUserDto, UpdateUserDto } from '@app/shared/dto/users';
+import { CreateUserDto, UpdateUserDto } from '../../libs/src/dto/users/index';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { USER_MESSAGE_PATTERNS } from '@app/shared/constants';
 
 describe('UsersController (Microservice Integration)', () => {
   let app: INestApplication;

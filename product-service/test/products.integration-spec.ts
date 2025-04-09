@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { ProductsController } from '../src/products/products.controller';
 import { ProductsService } from '../src/products/products.service';
 import { Product } from '../src/products/entities/product.entity';
-import { CreateProductDto, UpdateProductDto, UpdateStockDto } from '@app/shared/src/dto/products';
+import { CreateProductDto, UpdateProductDto, UpdateStockDto } from '@app/shared/dto/products';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 describe('ProductsController (Microservice Integration)', () => {

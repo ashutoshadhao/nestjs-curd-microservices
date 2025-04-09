@@ -1,11 +1,9 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { UpdateStockDto } from './dto/update-stock.dto';
+import { CreateProductDto ,UpdateProductDto  , UpdateStockDto} from '../../../libs/src/dto/products/index';
 import { Product } from './entities/product.entity';
-import { PRODUCT_MESSAGE_PATTERNS } from '../../../libs/src/constants';
+import { PRODUCT_MESSAGE_PATTERNS } from '../../../libs/src/constants'
 
 @Controller('products')
 export class ProductsController {
